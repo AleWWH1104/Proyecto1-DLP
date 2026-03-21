@@ -1,0 +1,6 @@
+-- Note: This is a LEXICAL file - the lexer itself will tokenize fine
+-- but it is included to show a file with a character PICO cannot lex
+when (true) {
+    emit "open";
+    let x <- 99 $ 2;
+}

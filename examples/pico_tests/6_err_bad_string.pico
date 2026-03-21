@@ -1,0 +1,3 @@
+-- String that is never closed
+let msg <- "hello world;
+emit msg;

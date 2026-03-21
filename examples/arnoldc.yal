@@ -1,0 +1,99 @@
+(* arnoldc.yal — YALex specification for the ArnoldC language *)
+
+{
+(* Generated lexer for ArnoldC — Arnold Schwarzenegger keyword language *)
+(* All keywords are exact multi-word phrases, matched as string literals  *)
+}
+
+(* ── Character classes ──────────────────────────────── *)
+
+let digit     = ['0'-'9']
+let lower     = ['a'-'z']
+let upper     = ['A'-'Z']
+let ident     = lower (lower | digit | '_')*
+
+(* ── Integer literals (may be negative) ─────────────── *)
+
+let int_lit   = '-'? digit+
+
+(* ── String literal (double-quoted, no embedded newlines) *)
+
+let str_char  = [^ '"' '\n' '\\'] | '\\' _
+let str_lit   = '"' str_char* '"'
+
+(* ══════════════════════════════════════════════════════ *)
+
+rule gettoken =
+
+    (* Skip whitespace and newlines *)
+    [' ' '\t' '\n' '\r']                                      { return lexbuf }
+
+    (* ── Boolean / constant macros ── must come BEFORE ident ── *)
+
+  | "@NO PROBLEMO"                                            { return KW_TRUE }
+  | "@I LIED"                                                 { return KW_FALSE }
+
+    (* ── Main method delimiters ── *)
+
+  | "IT'S SHOWTIME"                                           { return KW_MAIN_START }
+  | "YOU HAVE BEEN TERMINATED"                                { return KW_MAIN_END }
+
+    (* ── Print ── *)
+
+  | "TALK TO THE HAND"                                        { return KW_PRINT }
+
+    (* ── Variable declaration ── *)
+
+  | "HEY CHRISTMAS TREE"                                      { return KW_DECLARE }
+  | "YOU SET US UP"                                           { return KW_INIT }
+
+    (* ── Assignment block ── *)
+
+  | "GET TO THE CHOPPER"                                      { return KW_ASSIGN_START }
+  | "HERE IS MY INVITATION"                                   { return KW_ASSIGN_INIT }
+  | "ENOUGH TALK"                                             { return KW_ASSIGN_END }
+
+    (* ── Arithmetic operations ── *)
+
+  | "GET UP"                                                  { return KW_PLUS }
+  | "GET DOWN"                                                { return KW_MINUS }
+  | "YOU'RE FIRED"                                            { return KW_TIMES }
+  | "HE HAD TO SPLIT"                                         { return KW_DIV }
+
+    (* ── Logical operations ── *)
+
+  | "YOU ARE NOT YOU YOU ARE ME"                              { return KW_EQ }
+  | "LET OFF SOME STEAM BENNET"                               { return KW_GT }
+  | "CONSIDER THAT A DIVORCE"                                 { return KW_OR }
+  | "KNOCK KNOCK"                                             { return KW_AND }
+
+    (* ── Conditionals ── must check longer phrases first ── *)
+
+  | "BECAUSE I'M GOING TO SAY PLEASE"                         { return KW_IF }
+  | "BULLSHIT"                                                { return KW_ELSE }
+  | "YOU HAVE NO RESPECT FOR LOGIC"                           { return KW_ENDIF }
+
+    (* ── While loop ── *)
+
+  | "STICK AROUND"                                            { return KW_WHILE }
+  | "CHILL"                                                   { return KW_ENDWHILE }
+
+    (* ── Methods ── longest phrases first ── *)
+
+  | "LISTEN TO ME VERY CAREFULLY"                             { return KW_METHOD_DEF }
+  | "I NEED YOUR CLOTHES YOUR BOOTS AND YOUR MOTORCYCLE"      { return KW_METHOD_ARG }
+  | "GIVE THESE PEOPLE AIR"                                   { return KW_METHOD_NONVOID }
+  | "HASTA LA VISTA, BABY"                                    { return KW_METHOD_END }
+  | "I'LL BE BACK"                                            { return KW_RETURN }
+  | "GET YOUR ASS TO MARS"                                    { return KW_CALL_ASSIGN }
+  | "DO IT NOW"                                               { return KW_CALL_VOID }
+
+    (* ── Literals and identifiers ── last, after all keywords ── *)
+
+  | str_lit                                                   { return STRING_LIT(lxm) }
+  | int_lit                                                   { return INT_LIT(lxm) }
+  | ident                                                     { return IDENT(lxm) }
+
+    (* ── End of file ── *)
+
+  | eof                                                       { raise( 'End of input' ) }
